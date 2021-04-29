@@ -1,0 +1,245 @@
+//1. Обчислити кількість кожної з оцінок «5», «4», «3» з математики.
+//2. Вивести прізвища студентів, які отримали і з фізики і з математики оцінку «5».
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <Windows.h>
+#include <stdio.h>
+#include <fstream>
+
+using namespace std;
+
+enum Specialty { KN, IT, ME, FI, TTI };
+string SpecialtyStr[]{ "Комп'ютерні науки" , "Інформатика" , "Математика та економіка" , "Фізика та інформатика" , "Трудове навчання" };
+
+struct Student
+{
+	string prizv;
+	int kurs;
+	Specialty specialty;
+	int Phisic;
+	int Math;
+	union
+	{
+		int Prog;
+		int Num_methods;
+		int Pedagogy;
+	};
+
+
+};
+
+void Create(char* fname);
+void Print(char* fname);
+int* Kilk(char* fname);
+void Print_Students_Who_Have_5_In_Phisics_In_Math(char* fname);
+
+
+int main()
+{
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+	char  fname[100];
+	int menuItem;
+
+	do
+	{
+		cout << endl << endl;
+		cout << "Виберіть дію:" << endl << endl;
+		cout << " [1] - ввести дані у файл" << endl;
+		cout << " [2] - вивести дані на екран" << endl;
+		cout << " [3] - кількість кожної з оцінок «5», «4», «3» з математики" << endl;
+		cout << " [4] - вивести прізвища студентів, які отримали і з фізики і з математики оцінку «5» " << endl;
+		cout << " [0] - вихід та завершення роботи програми" << endl << endl;
+		cout << "Введіть значення: "; cin >> menuItem;
+		cout << endl << endl << endl;
+		switch (menuItem)
+		{
+		case 1:
+			cin.get(); // очищуємо буфер клавіатури – щоб не було символу
+			cin.sync(); // "кінець рядка", який залишився після вводу числа
+			cout << "Введіть ім'я файла:"; cin.getline(fname, sizeof(fname));
+			Create(fname);
+			break;
+		case 2:
+			cin.get();
+			cin.sync();
+			cout << "Введіть ім'я файла:"; cin.getline(fname, sizeof(fname));
+			Print(fname);
+			break;
+		case 3:
+			cin.get();
+			cin.sync();
+			cout << "Введіть ім'я файла:"; cin.getline(fname, sizeof(fname));
+			Kilk(fname);
+			break;
+		case 4:
+			cin.get();
+			cin.sync();
+			cout << "Введіть ім'я файла:"; cin.getline(fname, sizeof(fname));
+			Print_Students_Who_Have_5_In_Phisics_In_Math(fname);
+			break;
+		case 0:
+			break;
+		default:
+			cout << "Ви ввели помилкове значення! "
+				"Слід ввести число  - номер вибраного пункту меню" << endl;
+		}
+	} while (menuItem != 0);
+
+	return 0;
+
+}
+
+void Create(char* fname)
+{
+	FILE* f;
+	if ((f = fopen(fname, "wb")) == NULL)
+	{
+		cerr << "Error openning file '" << fname "'" << endl;
+		return;
+	}
+
+	int specialty;
+	Student student;
+	char ch;
+
+
+	do
+	{
+		cout << endl;
+		cout << "Прiзвище: "; cin.sync(); cin >> student.prizv;
+		cout << "Курс: ";  cin >> student.kurs;
+		cout << "Спецiальність (0 - КН, 1 - IФ, 2 - МЕ, 3 - ФI, 4 - ТТI): ";
+		cin >> specialty;
+		student.specialty = (Specialty)specialty;
+		cout << "Оцiнка з фізики - "; cin >> student.Phisic;
+		cout << "Оцiнка з математики - "; cin >> student.Math;
+		switch (student.specialty)
+		{
+		case KN:
+			cout << "Оцінка з програмування :"; cin >> student.Prog;
+			break;
+		case IT:
+			cout << "Оцінка з Чисельних методів :"; cin >> student.Num_methods;
+			break;
+		case ME:
+		case FI:
+		case TTI:
+			cout << "Оцінка з Педагогіки :"; cin >> student.Pedagogy;
+			break;
+		}
+		if (fwrite(&student, sizeof(Student), 1, f) != 1)
+		{
+			cerr << "Error writing file. " << endl;
+			return;
+		}
+
+		cout << "продовжити? (y/n): "; cin >> ch;
+	} while (ch == 'y' || ch == 'Y');
+
+	fclose(f);
+}
+
+void Print(char* fname) // виведення файлу на екран
+{
+	FILE* f;
+	if ((f = fopen(fname, "rb")) == NULL)
+	{
+		cerr << "Error openning file '" << fname "'" << endl;
+		return;
+	}
+	Student student;
+
+	while (!feof(f))
+	{
+
+		if (fread(&student, sizeof(Student), 1, f) !=1)
+			if (feof(f))
+			{
+				return;
+			}
+		cout << endl;
+		cout << "Прiзвище: " << student.prizv << endl;
+		cout << "Курс: " << student.kurs << endl;
+		cout << "Спецiальність: " << SpecialtyStr[student.specialty] << endl;
+		cout << "Оцiнка з фізики - " << student.Phisic << endl;
+		cout << "Оцiнка з математики - " << student.Math << endl;
+		switch (student.specialty)
+		{
+		case KN:
+			cout << "Оцінка з програмування :" << student.Prog << endl;
+			break;
+		case IT:
+			cout << "Оцінка з Чисельних методів :" << student.Num_methods << endl;
+			break;
+		case ME:
+		case FI:
+		case TTI:
+			cout << "Оцінка з Педагогіки :" << student.Pedagogy << endl;
+			break;
+		}
+	}
+
+	fclose(f);
+
+}
+
+int* Kilk(char* fname)
+{
+	ifstream f(fname, ios::binary);
+	Student student;
+
+	if (!f)
+	{
+		cerr << "Error writing file '" << fname << "'" << endl;
+		return;
+	}
+
+	int kilk = 0;
+
+	while (f.read((char*)&student, sizeof(Student)))
+
+		int three = 0,  four = 0, five = 0;
+	{
+		if (student.Math == 3)
+		{
+			three++;
+		}
+		if (student.Math == 4)
+		{
+			four++;
+		}
+		if (student.Math == 5)
+		{
+			five++;
+		}
+		
+	}
+	cout << "Kількість кожної з оцінок «5», «4», «3» з математики. . = " << setprecision(3);
+
+	f.close();
+}
+
+void Print_Students_Who_Have_5_In_Phisics_In_Math(char* fname)
+{
+	ifstream f(fname, ios::binary);
+	Student student;
+
+	if (!f)
+	{
+			cerr << "Error writing file '" << fname << "'" << endl;
+			return;
+	}
+	int № = 0;
+	cout << "Прізвища студентів, які отримали і з фізики і з математики оцінку «5» :" << endl;
+	while (f.read((char*)&student, sizeof(Student)))
+	{
+		if (student.Phisic == 5 && student.Math == 5)
+			cout << ++№ << "." << student.prizv << endl;
+
+	}
+
+	f.close();
+}
